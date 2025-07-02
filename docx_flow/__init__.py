@@ -6,25 +6,27 @@ Docx Enhanced Toolkit - 增强版 Python Docx 处理库
 __version__ = "0.1.0"
 __author__ = "Docx Toolkit Team"
 
-from .toolkit import (
-    DocxEditor,
-    FluentSelector,
+from .editor import DocxEditor
+from .selector import FluentSelector
+from .conditions import (
     Condition,
-    Action,
     RegexCondition,
     TableColumnCondition,
-    FunctionCondition,
+    TableTextCondition,
+    FunctionCondition
+)
+from .actions import (
+    Action,
     RemoveTableBordersAction,
     SetTableWidthAction,
+    AutoFitTableAction,
+    SetTableColumnWidthAction,
     AlignParagraphAction,
     SetTabStopAction,
-    ReplaceTextAction,
-    SetSectionOrientationAction,
-    SetTableColumnWidthAction,
     ClearAndSetTabStopAction,
-    AutoFitTableAction,
-    TableTextCondition,
-    SetFontSizeAction
+    ReplaceTextAction,
+    SetFontSizeAction,
+    SetSectionOrientationAction
 )
 
 __all__ = [

@@ -21,16 +21,15 @@ from docx.text.paragraph import Paragraph
 from docx.oxml.ns import qn
 
 # ----------------------------------------------------------------------
-# 假设您的 toolkit 文件在项目根目录的 docx_toolkit/toolkit.py
-# 如果路径不同，请相应调整
-from docx_flow.toolkit import (
-    DocxEditor,
-    # Conditions
+# 导入 docx_flow 模块的各个组件
+from docx_flow import DocxEditor
+from docx_flow.conditions import (
     RegexCondition,
     TableColumnCondition,
     TableTextCondition,
     FunctionCondition,
-    # Actions
+)
+from docx_flow.actions import (
     AlignParagraphAction,
     ReplaceTextAction,
     SetTableWidthAction,
