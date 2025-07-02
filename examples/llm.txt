@@ -1,0 +1,508 @@
+# Docx Flow - LLM Function Documentation
+
+Docx Flow 是一个强大而优雅的 Word 文档自动化处理库，提供流畅的链式调用 API。
+
+## 核心类与初始化
+
+### DocxEditor 
+主编辑器类，文档处理的入口点。
+
+```python
+from docx_flow import DocxEditor
+
+# 初始化编辑器
+editor = DocxEditor('input.docx')
+```
+
+## 选择器方法
+
+### select_paragraphs()
+选择文档中的所有段落。
+
+```python
+# 选择所有段落
+paragraphs = editor.select_paragraphs()
+```
+
+### select_tables()
+选择文档中的所有表格。
+
+```python
+# 选择所有表格
+tables = editor.select_tables()
+```
+
+### select_sections()
+选择文档中的所有节。
+
+```python
+# 选择所有节
+sections = editor.select_sections()
+```
+
+## FluentSelector 筛选方法
+
+### where(condition)
+根据条件筛选元素。
+
+```python
+from docx_flow.conditions import RegexCondition
+
+# 筛选包含特定文本的段落
+editor.select_paragraphs().where(RegexCondition(r"重要"))
+```
+
+### get_by_index(index)
+按索引获取单个元素。
+
+```python
+# 获取第一个表格
+editor.select_tables().get_by_index(0)
+
+# 获取最后一个段落（支持负索引）
+editor.select_paragraphs().get_by_index(-1)
+```
+
+### in_section(section_index)
+筛选特定节中的元素。
+
+```python
+# 获取第二节中的所有段落
+editor.select_paragraphs().in_section(1)
+```
+
+### from_section(start_section_index)
+从指定节开始筛选元素。
+
+```python
+# 获取从第二节开始的所有表格
+editor.select_tables().from_section(1)
+```
+
+### apply(action)
+对选中的元素应用操作。
+
+```python
+from docx_flow.actions import ReplaceTextAction
+
+# 应用文本替换操作
+editor.select_paragraphs().where(RegexCondition(r"旧文本")).apply(ReplaceTextAction("旧文本", "新文本"))
+```
+
+## 条件类 (Conditions)
+
+### RegexCondition(pattern)
+正则表达式条件，检查段落文本是否匹配特定模式。
+
+```python
+from docx_flow.conditions import RegexCondition
+
+# 匹配包含"重要"的段落
+condition = RegexCondition(r"重要")
+editor.select_paragraphs().where(condition)
+```
+
+### TableTextCondition(text)
+表格文本条件，检查表格是否包含特定文本。
+
+```python
+from docx_flow.conditions import TableTextCondition
+
+# 筛选包含"数据"的表格
+condition = TableTextCondition("数据")
+editor.select_tables().where(condition)
+```
+
+### TableColumnCondition(column_count)
+表格列数条件，检查表格是否具有指定的列数。
+
+```python
+from docx_flow.conditions import TableColumnCondition
+
+# 筛选有3列的表格
+condition = TableColumnCondition(3)
+editor.select_tables().where(condition)
+```
+
+### FunctionCondition(func)
+自定义函数条件，使用自定义函数作为检查逻辑。
+
+```python
+from docx_flow.conditions import FunctionCondition
+from docx.text.paragraph import Paragraph
+
+# 检查段落是否包含超过2个run
+def has_multiple_runs(p):
+    return isinstance(p, Paragraph) and len(p.runs) > 2
+
+condition = FunctionCondition(has_multiple_runs)
+editor.select_paragraphs().where(condition)
+```
+
+## 操作类 (Actions)
+
+### ReplaceTextAction(old_text, new_text)
+替换文本内容。
+
+```python
+from docx_flow.actions import ReplaceTextAction
+
+# 替换文本
+action = ReplaceTextAction("旧内容", "新内容")
+editor.select_paragraphs().apply(action)
+```
+
+### AlignParagraphAction(alignment)
+设置段落对齐方式。
+
+```python
+from docx_flow.actions import AlignParagraphAction
+
+# 居中对齐
+action = AlignParagraphAction('center')  # 'left', 'center', 'right', 'justify'
+editor.select_paragraphs().apply(action)
+```
+
+### SetFontSizeAction(size)
+设置字体大小。
+
+```python
+from docx_flow.actions import SetFontSizeAction
+
+# 设置绝对字号为18磅
+action = SetFontSizeAction(18)
+editor.select_paragraphs().apply(action)
+
+# 相对调整字号，增加4磅
+action = SetFontSizeAction('+4')
+editor.select_paragraphs().apply(action)
+
+# 相对调整字号，减少2磅
+action = SetFontSizeAction('-2')
+editor.select_paragraphs().apply(action)
+```
+
+### SetTabStopAction(position_in_cm)
+设置制表位。
+
+```python
+from docx_flow.actions import SetTabStopAction
+
+# 在8cm处设置制表位
+action = SetTabStopAction(8.0)
+editor.select_paragraphs().apply(action)
+```
+
+### ClearAndSetTabStopAction(position_in_cm)
+清除现有制表位并设置新制表位。
+
+```python
+from docx_flow.actions import ClearAndSetTabStopAction
+
+# 清除所有制表位并在2cm处设置新制表位
+action = ClearAndSetTabStopAction(2.0)
+editor.select_paragraphs().apply(action)
+```
+
+### SetTableWidthAction(width)
+设置表格宽度。
+
+```python
+from docx_flow.actions import SetTableWidthAction
+from docx.shared import Cm, Inches
+
+# 设置表格宽度为5cm
+action = SetTableWidthAction(Cm(5))
+editor.select_tables().apply(action)
+
+# 设置表格宽度为3英寸
+action = SetTableWidthAction(Inches(3))
+editor.select_tables().apply(action)
+```
+
+### AutoFitTableAction(autofit_type, first_col_ratio)
+自动调整表格大小。
+
+```python
+from docx_flow.actions import AutoFitTableAction
+
+# 根据内容自动调整
+action = AutoFitTableAction('contents')
+editor.select_tables().apply(action)
+
+# 自动调整到窗口宽度
+action = AutoFitTableAction('window')
+editor.select_tables().apply(action)
+
+# 固定列宽（平均分配）
+action = AutoFitTableAction('fixed')
+editor.select_tables().apply(action)
+
+# 首列占50%宽度，其余列平分剩余宽度
+action = AutoFitTableAction(first_col_ratio=0.5)
+editor.select_tables().apply(action)
+```
+
+### SetTableColumnWidthAction(widths)
+设置表格各列的精确宽度。
+
+```python
+from docx_flow.actions import SetTableColumnWidthAction
+from docx.shared import Cm, Inches
+
+# 设置3列表格的各列宽度
+widths = [Inches(1.0), Cm(5), Cm(2)]
+action = SetTableColumnWidthAction(widths)
+editor.select_tables().apply(action)
+```
+
+### RemoveTableBordersAction()
+移除表格边框。
+
+```python
+from docx_flow.actions import RemoveTableBordersAction
+
+# 移除表格边框
+action = RemoveTableBordersAction()
+editor.select_tables().apply(action)
+```
+
+### SetSectionOrientationAction(orientation)
+设置节的页面方向。
+
+```python
+from docx_flow.actions import SetSectionOrientationAction
+
+# 设置为横向
+action = SetSectionOrientationAction('landscape')
+editor.select_sections().apply(action)
+
+# 设置为纵向
+action = SetSectionOrientationAction('portrait')
+editor.select_sections().apply(action)
+```
+
+## 链式调用示例
+
+### 基本文本处理
+
+```python
+from docx_flow import DocxEditor
+from docx_flow.conditions import RegexCondition
+from docx_flow.actions import ReplaceTextAction, AlignParagraphAction
+
+editor = DocxEditor('input.docx')
+
+# 链式调用：查找并替换文本，然后居中对齐
+editor.select_paragraphs()\
+    .where(RegexCondition(r"重要"))\
+    .apply(ReplaceTextAction("重要", "⭐ 重要"))\
+    .apply(AlignParagraphAction('center'))
+```
+
+### 表格处理
+
+```python
+from docx_flow.conditions import TableTextCondition
+from docx_flow.actions import AutoFitTableAction, RemoveTableBordersAction
+
+# 处理包含特定文本的表格
+editor.select_tables()\
+    .where(TableTextCondition("数据统计"))\
+    .apply(AutoFitTableAction('window'))\
+    .apply(RemoveTableBordersAction())
+```
+
+### 复杂条件筛选
+
+```python
+from docx_flow.conditions import FunctionCondition
+from docx.text.paragraph import Paragraph
+
+# 自定义函数：检查段落是否包含粗体文本
+def has_bold_text(p):
+    if isinstance(p, Paragraph):
+        for run in p.runs:
+            if run.bold:
+                return True
+    return False
+
+# 对包含粗体文本的段落进行处理
+editor.select_paragraphs()\
+    .where(FunctionCondition(has_bold_text))\
+    .apply(SetFontSizeAction('+2'))
+```
+
+## 完整示例 - demo.py 主要功能演示
+
+```python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from docx_flow import DocxEditor
+from docx_flow.conditions import (
+    RegexCondition,
+    TableTextCondition,
+    FunctionCondition,
+)
+from docx_flow.actions import (
+    AlignParagraphAction,
+    ReplaceTextAction,
+    SetTableWidthAction,
+    RemoveTableBordersAction,
+    AutoFitTableAction,
+    SetFontSizeAction,
+    SetTabStopAction,
+    ClearAndSetTabStopAction,
+    SetSectionOrientationAction,
+    SetTableColumnWidthAction
+)
+from docx.shared import Cm, Inches
+from docx.text.paragraph import Paragraph
+
+def main():
+    # 初始化编辑器
+    editor = DocxEditor("demo_ultimate_input.docx")
+    
+    # 1. 段落操作
+    # 1.1 文本替换
+    editor.select_paragraphs()\
+        .where(RegexCondition(r"【目标:文本替换】"))\
+        .apply(ReplaceTextAction("旧内容", "焕然一新的内容"))\
+        .apply(ReplaceTextAction("【目标:文本替换】", "【效果】"))
+    
+    # 1.2 段落对齐
+    editor.select_paragraphs()\
+        .where(RegexCondition(r"【目标:居中对齐】"))\
+        .apply(AlignParagraphAction('center'))\
+        .apply(ReplaceTextAction("【目标:居中对齐】", "【效果】"))
+    
+    editor.select_paragraphs()\
+        .where(RegexCondition(r"【目标:右对齐】"))\
+        .apply(AlignParagraphAction('right'))\
+        .apply(ReplaceTextAction("【目标:右对齐】", "【效果】"))
+    
+    # 1.3 字体大小调整
+    editor.select_paragraphs()\
+        .where(RegexCondition(r"【目标:绝对字号】"))\
+        .apply(SetFontSizeAction(18))\
+        .apply(ReplaceTextAction("【目标:绝对字号】", "【效果】"))
+    
+    editor.select_paragraphs()\
+        .where(RegexCondition(r"【目标:相对字号】"))\
+        .apply(SetFontSizeAction('+4'))\
+        .apply(ReplaceTextAction("【目标:相对字号】", "【效果】"))
+    
+    # 1.4 制表位设置
+    editor.select_paragraphs()\
+        .where(RegexCondition(r"【目标:设置制表位】"))\
+        .apply(SetTabStopAction(8.0))\
+        .apply(ReplaceTextAction("【目标:设置制表位】", "【效果】"))
+    
+    editor.select_paragraphs()\
+        .where(RegexCondition(r"【目标:清空并重设制表位】"))\
+        .apply(ClearAndSetTabStopAction(2.0))\
+        .apply(ReplaceTextAction("【目标:清空并重设制表位】", "【效果】"))
+    
+    # 2. 表格操作
+    # 2.1 内容自适应
+    editor.select_tables().where(TableTextCondition("Content Autofit"))\
+        .apply(AutoFitTableAction('contents'))
+    
+    # 2.2 窗口自适应
+    editor.select_tables().where(TableTextCondition("Window Autofit"))\
+        .apply(AutoFitTableAction('window'))
+    
+    # 2.3 固定宽度，列平分
+    editor.select_tables().where(TableTextCondition("Fixed (Equal)"))\
+        .apply(AutoFitTableAction('fixed'))
+    
+    # 2.4 首列按比例
+    editor.select_tables().where(TableTextCondition("Ratio"))\
+        .apply(AutoFitTableAction(first_col_ratio=0.5))
+    
+    # 2.5 设置绝对宽度
+    editor.select_tables().where(TableTextCondition("Absolute Width"))\
+        .apply(SetTableWidthAction(Cm(5)))
+    
+    # 2.6 设置各列精确宽度
+    editor.select_tables().where(TableTextCondition("Column Widths"))\
+        .apply(SetTableColumnWidthAction([Inches(1.0), Cm(5), Cm(2)]))
+    
+    # 2.7 移除边框
+    editor.select_tables().where(TableTextCondition("Border Removal"))\
+        .apply(RemoveTableBordersAction())
+    
+    # 3. 节操作与高级筛选
+    # 3.1 页面方向设置
+    editor.select_sections().get_by_index(1).apply(SetSectionOrientationAction('landscape'))
+    editor.select_paragraphs()\
+        .where(RegexCondition(r"【目标:横向页面】"))\
+        .apply(ReplaceTextAction("【目标:横向页面】", "【效果】"))
+    
+    # 3.2 自定义函数筛选
+    def has_multiple_runs(p: Paragraph) -> bool:
+        return isinstance(p, Paragraph) and len(p.runs) > 2
+    
+    editor.select_paragraphs()\
+        .where(FunctionCondition(has_multiple_runs))\
+        .where(RegexCondition(r"【目标:自定义函数】"))\
+        .apply(ReplaceTextAction("【目标:自定义函数】", "【效果】"))
+    
+    # 保存文档
+    editor.save("demo_ultimate_output.docx")
+
+if __name__ == "__main__":
+    main()
+```
+
+## 保存文档
+
+```python
+# 保存修改后的文档
+editor.save('output.docx')
+```
+
+## 常用模式
+
+### 批量文本替换
+```python
+# 批量替换多个文本
+replacements = [("旧文本1", "新文本1"), ("旧文本2", "新文本2")]
+for old, new in replacements:
+    editor.select_paragraphs().apply(ReplaceTextAction(old, new))
+```
+
+### 表格格式化
+```python
+# 统一格式化所有表格
+editor.select_tables()\
+    .apply(AutoFitTableAction('window'))\
+    .apply(RemoveTableBordersAction())
+```
+
+### 节级操作
+```python
+# 将特定节设置为横向
+editor.select_sections().get_by_index(1)\
+    .apply(SetSectionOrientationAction('landscape'))
+```
+
+## 工具函数属性
+
+### count 属性
+获取当前选中元素的数量。
+
+```python
+# 获取段落数量
+paragraph_count = editor.select_paragraphs().count
+print(f"文档共有 {paragraph_count} 个段落")
+```
+
+### get() 方法
+获取当前选中的所有元素。
+
+```python
+# 获取所有包含"重要"的段落
+important_paragraphs = editor.select_paragraphs()\
+    .where(RegexCondition(r"重要")).get()
+```

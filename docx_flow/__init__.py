@@ -27,7 +27,7 @@ Docx Flow - 强大而优雅的 Word 文档自动化处理库
 更多示例请参考项目文档和 demo.py 演示文件。
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Docx Flow Team"
 __description__ = "强大而优雅的 Word 文档自动化处理库"
 
