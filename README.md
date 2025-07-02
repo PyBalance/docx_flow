@@ -362,7 +362,7 @@ python -m pytest
 python -m pytest tests/test_conditions.py
 
 # 查看测试覆盖率
-python -m pytest --cov=docx_toolkit
+python -m pytest --cov=docx_flow
 ```
 
 ## 许可证
