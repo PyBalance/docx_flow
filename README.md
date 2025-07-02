@@ -1,6 +1,8 @@
-# Docx Enhanced Toolkit
+# docx-flow
 
-一个基于 python-docx 的强大 Python 库，用于对 Word 文档进行条件化修改和批量处理。
+一个基于 python-docx 的流式API库，用于对 Word 文档进行条件化修改和批量处理。
+
+当前版本：v0.1.0
 
 ## 特性
 
@@ -26,6 +28,19 @@ pip install git+https://github.com/PyBalance/docx-flow.git
 ### 使用 pipenv
 ```bash
 pipenv install git+https://github.com/PyBalance/docx-flow.git#egg=docx-flow
+```
+
+### 更新到最新版本
+
+```bash
+# 使用 uv 更新
+uv add --upgrade git+https://github.com/PyBalance/docx-flow.git
+
+# 使用 pip 更新
+pip install --upgrade git+https://github.com/PyBalance/docx-flow.git
+
+# 使用 pipenv 更新
+pipenv update docx-flow
 ```
 
 ## 快速开始
@@ -379,9 +394,9 @@ MIT License
 
 ## 更新日志
 
-### v1.0.0
+### v0.1.0
 - 初始版本发布
-- 支持基本的段落和表格操作
+- 支持基本的段落和表格操作  
 - 实现流畅的链式调用接口
-- 完整的测试套件
+- 完整的功能演示
 
