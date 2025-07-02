@@ -1,65 +1,46 @@
-# docx-flow
+# Docx Flow
 
-一个基于 python-docx 的流式API库，用于对 Word 文档进行条件化修改和批量处理。
+一个强大而优雅的 Python 库，用于 Word 文档的自动化处理。提供链式调用语法，让文档操作变得简单直观。
 
-当前版本：v0.1.0
+## ✨ 特性
 
-## 特性
+- 🔗 **链式调用**：流畅的 API 设计，支持链式操作
+- 🎯 **精确选择**：支持正则表达式、函数条件等多种筛选方式
+- 📊 **表格处理**：强大的表格操作功能，包括自动调整、边框控制等
+- 📝 **段落控制**：文本替换、对齐、字体等段落级别操作
+- 📄 **页面设置**：页面方向、节操作等文档级别控制
+- 🧩 **模块化设计**：清晰的模块结构，按需导入
 
-- **流畅的链式调用接口**：使用直观的方法链来选择和修改文档元素
-- **条件化选择**：基于正则表达式、表格列数或自定义函数来筛选元素
-- **节级别操作**：支持按文档节来限制操作范围
-- **丰富的操作类型**：支持段落对齐、表格格式化、文本替换、制表位设置等
-- **类型安全**：完整的类型注解支持
-- **全面测试**：确保代码质量和稳定性
+## 🚀 快速开始
 
-## 安装
+### 安装
 
-### 使用 uv (推荐)
 ```bash
+# 使用 uv (推荐)
 uv add git+https://github.com/PyBalance/docx-flow.git
-```
 
-### 使用 pip
-```bash
+# 使用 pip
 pip install git+https://github.com/PyBalance/docx-flow.git
 ```
-
-### 使用 pipenv
-```bash
-pipenv install git+https://github.com/PyBalance/docx-flow.git#egg=docx-flow
-```
-
-### 更新到最新版本
-
-```bash
-# 使用 uv 更新
-uv add --upgrade git+https://github.com/PyBalance/docx-flow.git
-
-# 使用 pip 更新
-pip install --upgrade git+https://github.com/PyBalance/docx-flow.git
-
-# 使用 pipenv 更新
-pipenv update docx-flow
-```
-
-## 快速开始
 
 ### 基本用法
 
 ```python
-from docx_flow import DocxEditor, RegexCondition, AlignParagraphAction
+from docx_flow import DocxEditor
+from docx_flow.conditions import RegexCondition
+from docx_flow.actions import ReplaceTextAction, AlignParagraphAction
 
 # 打开文档
 editor = DocxEditor('document.docx')
 
-# 将包含"重要"的段落右对齐
-editor.select_paragraphs()\
-      .where(RegexCondition(r'重要'))\
-      .apply(AlignParagraphAction('right'))
+# 链式操作：找到包含特定文本的段落并替换，然后居中对齐
+editor.select_paragraphs() \
+    .where(RegexCondition(r'重要提示')) \
+    .apply(ReplaceTextAction('重要提示', '⭐ 重要提示')) \
+    .apply(AlignParagraphAction('center'))
 
-# 保存修改
-editor.save('modified_document.docx')
+# 保存文档
+editor.save('output.docx')
 ```
 
 ### 复杂操作示例

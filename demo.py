@@ -15,8 +15,7 @@ Docx Toolkit - 代码即文档
 import os
 import subprocess
 from docx import Document
-from docx.shared import Cm, Pt, Inches
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Cm, Inches
 from docx.text.paragraph import Paragraph
 from docx.oxml.ns import qn
 
@@ -25,7 +24,6 @@ from docx.oxml.ns import qn
 from docx_flow import DocxEditor
 from docx_flow.conditions import (
     RegexCondition,
-    TableColumnCondition,
     TableTextCondition,
     FunctionCondition,
 )
