@@ -6,163 +6,106 @@
 演示如何使用 docx_flow 为 Word 文档添加和管理页码。
 """
 
+from docx import Document
 from docx_flow import DocxEditor
 from docx_flow.actions import AddPageNumberAction, ClearPageNumberAction
 
 
-def demonstrate_page_numbering():
-    """演示页码功能的各种用法"""
-    print("🌟 Docx Flow 页码功能演示 🌟")
-    print("=" * 50)
+def create_test_document():
+    """创建测试文档"""
+    doc = Document()
     
-    # 假设我们有一个包含多个节的文档
-    # 在实际使用中，请替换为您的文档路径
-    input_file = "multi_section_document.docx"
-    output_file = "page_numbered_output.docx"
+    # 第一节：封面页
+    doc.add_heading('封面页', level=0)
+    doc.add_paragraph('这是文档的封面页，不应该有页码。')
+    
+    # 第二节：目录
+    doc.add_section()
+    doc.add_heading('目录', level=0)
+    doc.add_paragraph('第一章 ............................ 1')
+    doc.add_paragraph('第二章 ............................ 5')
+    doc.add_paragraph('附录 .............................. 10')
+    
+    # 第三节：第一章
+    doc.add_section()
+    doc.add_heading('第一章 引言', level=1)
+    doc.add_paragraph('这是第一章的内容。从这里开始应该有页码。')
+    for i in range(3):
+        doc.add_paragraph(f'第一章第{i+1}段内容。' * 15)
+    
+    # 第四节：第二章
+    doc.add_section()
+    doc.add_heading('第二章 方法', level=1)
+    doc.add_paragraph('这是第二章的内容，页码应该继续。')
+    for i in range(3):
+        doc.add_paragraph(f'第二章第{i+1}段内容。' * 15)
+    
+    # 第五节：附录
+    doc.add_section()
+    doc.add_heading('附录', level=1)
+    doc.add_paragraph('这是附录内容，通常重新开始编页码。')
+    for i in range(2):
+        doc.add_paragraph(f'附录第{i+1}段内容。' * 15)
+    
+    filename = "test_document.docx"
+    doc.save(filename)
+    print(f"创建测试文档: {filename} (包含 {len(doc.sections)} 个节)")
+    return filename
+
+
+def main():
+    """主函数"""
+    print("页码功能测试")
+    print("=" * 30)
+    
+    # 创建测试文档
+    input_file = create_test_document()
     
     try:
         editor = DocxEditor(input_file)
-        print(f"📖 已加载文档: {input_file}")
-        print(f"📄 文档包含 {editor.select_sections().count} 个节")
+        print(f"文档包含 {editor.select_sections().count} 个节")
         
-        # 演示1: 清除所有现有页码
-        print("\n--- 演示1: 清除所有页码 ---")
-        editor.select_sections().apply(ClearPageNumberAction())
-        print("✅ 已清除所有节的页码")
-        
-        # 演示2: 为所有节添加默认页码
-        print("\n--- 演示2: 添加默认页码 ---")
-        editor.select_sections().apply(AddPageNumberAction())
-        print("✅ 已为所有节添加默认页码（微软雅黑9号，居中）")
-        
-        # 演示3: 从第二节开始连续编页码
-        print("\n--- 演示3: 从第二节开始连续编页码 ---")
-        # 先清除所有页码
-        editor.select_sections().apply(ClearPageNumberAction())
-        # 从第二节开始添加页码
-        editor.select_sections().from_section(1)\
-            .apply(AddPageNumberAction(start_number=1, restart_numbering=True))
-        print("✅ 第一节无页码，从第二节开始编页码")
-        
-        # 演示4: 分组页码编号
-        print("\n--- 演示4: 分组页码编号 ---")
-        # 清除所有页码
+        # 测试1: 清除所有页码
+        print("\n测试1: 清除所有页码")
         editor.select_sections().apply(ClearPageNumberAction())
         
-        # 第1-2节为第一组（页码1-x）
-        if editor.select_sections().count >= 1:
-            editor.select_sections().get_by_index(0)\
-                .apply(AddPageNumberAction(start_number=1, restart_numbering=True))
-            print("✅ 第1节：重新开始编号，从1开始")
-            
-        if editor.select_sections().count >= 2:
-            editor.select_sections().get_by_index(1)\
-                .apply(AddPageNumberAction(restart_numbering=False))
-            print("✅ 第2节：继续编号")
+        # 测试2: 为第3节添加页码（从1开始）
+        print("测试2: 为第3节添加页码（从1开始）")
+        editor.select_sections().get_by_index(2).apply(AddPageNumberAction(
+            start_number=1, 
+            restart_numbering=True
+        ))
         
-        # 第3节开始为第二组（重新从1开始）
-        if editor.select_sections().count >= 3:
-            editor.select_sections().from_section(2)\
-                .apply(AddPageNumberAction(start_number=1, restart_numbering=True))
-            print("✅ 第3节及以后：重新开始编号，从1开始")
+        # 测试3: 为第4节添加连续页码
+        print("测试3: 为第4节添加连续页码")
+        editor.select_sections().get_by_index(3).apply(AddPageNumberAction(
+            restart_numbering=False
+        ))
         
-        # 演示5: 自定义页码格式
-        print("\n--- 演示5: 自定义页码格式 ---")
-        # 为第一节设置特殊格式的页码
-        if editor.select_sections().count >= 1:
-            editor.select_sections().get_by_index(0)\
-                .apply(AddPageNumberAction(
-                    start_number=1,
-                    restart_numbering=True,
-                    font_name='Arial',
-                    font_size=10,
-                    alignment='right'
-                ))
-            print("✅ 第1节：Arial字体，10号，右对齐")
+        # 测试4: 为第5节重新开始页码
+        print("测试4: 为第5节重新开始页码")
+        editor.select_sections().get_by_index(4).apply(AddPageNumberAction(
+            start_number=1,
+            restart_numbering=True
+        ))
         
-        # 演示6: 为特定节范围添加页码
-        print("\n--- 演示6: 为中间的节添加页码 ---")
-        # 清除所有页码
-        editor.select_sections().apply(ClearPageNumberAction())
-        
-        # 只为第2-3节添加页码
-        section_count = editor.select_sections().count
-        if section_count >= 3:
-            # 第2节开始编号
-            editor.select_sections().get_by_index(1)\
-                .apply(AddPageNumberAction(start_number=1, restart_numbering=True))
-            # 第3节继续编号
-            editor.select_sections().get_by_index(2)\
-                .apply(AddPageNumberAction(restart_numbering=False))
-            print("✅ 只有第2-3节有页码，其他节无页码")
-        
-        # 保存文档
+        # 保存结果
+        output_file = "test_output.docx"
         editor.save(output_file)
-        print(f"\n💾 文档已保存至: {output_file}")
-        print("🎉 页码功能演示完成！")
+        print(f"\n测试完成，已保存: {output_file}")
+        print("预期结果:")
+        print("  - 第1节（封面）：无页码")
+        print("  - 第2节（目录）：无页码")
+        print("  - 第3节（第一章）：页码 1")
+        print("  - 第4节（第二章）：页码 2")
+        print("  - 第5节（附录）：页码 1")
+        print("\n请在Word中打开文档，按F9更新字段验证")
         
-    except FileNotFoundError:
-        print(f"❌ 找不到输入文件: {input_file}")
-        print("请确保文件存在，或修改 input_file 变量指向正确的文档路径")
     except Exception as e:
-        print(f"❌ 处理过程中出现错误: {e}")
-
-
-def create_sample_scenarios():
-    """创建一些常见的页码使用场景示例"""
-    print("\n📚 常见页码使用场景")
-    print("=" * 30)
-    
-    scenarios = [
-        {
-            "name": "学术论文",
-            "description": "封面无页码，目录用罗马数字，正文从1开始",
-            "code": """
-# 清除所有页码
-editor.select_sections().apply(ClearPageNumberAction())
-
-# 封面（第1节）：无页码
-# 目录（假设第2节）：暂不支持罗马数字，跳过或使用数字
-# 正文（第3节开始）：从1开始
-editor.select_sections().from_section(2)\\
-    .apply(AddPageNumberAction(start_number=1, restart_numbering=True))
-"""
-        },
-        {
-            "name": "技术手册",
-            "description": "每个章节重新编页码",
-            "code": """
-# 为每个节都重新开始页码编号
-for i in range(editor.select_sections().count):
-    editor.select_sections().get_by_index(i)\\
-        .apply(AddPageNumberAction(start_number=1, restart_numbering=True))
-"""
-        },
-        {
-            "name": "合同文件",
-            "description": "正文连续编页码，附件重新编号",
-            "code": """
-# 假设前3节是正文，后续节是附件
-# 正文连续编号
-editor.select_sections().get_by_index(0)\\
-    .apply(AddPageNumberAction(start_number=1, restart_numbering=True))
-for i in range(1, 3):
-    editor.select_sections().get_by_index(i)\\
-        .apply(AddPageNumberAction(restart_numbering=False))
-
-# 附件重新编号
-editor.select_sections().from_section(3)\\
-    .apply(AddPageNumberAction(start_number=1, restart_numbering=True))
-"""
-        }
-    ]
-    
-    for scenario in scenarios:
-        print(f"\n📋 {scenario['name']}")
-        print(f"   {scenario['description']}")
-        print(f"   代码示例:{scenario['code']}")
+        print(f"错误: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
-    demonstrate_page_numbering()
-    create_sample_scenarios()
+    main()

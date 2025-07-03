@@ -71,13 +71,15 @@ class DocxEditor:
             except ValueError:
                 return 0
         elif isinstance(element, Section):
-            # Section对象是不同的，它们不是以相同方式成为主体的一部分。
-            # 它们与 <w:sectPr> 元素相关联。
-            # 节的列表应该是稳定的。
+            # Section对象：返回其在sections列表中的索引
             try:
-                # Sections list is not directly iterable in the same way, but we can create a list
-                return list(self.document.sections).index(element)
+                sections_list = list(self.document.sections)
+                return sections_list.index(element)
             except ValueError:
+                # 如果找不到，尝试通过节属性匹配
+                for i, section in enumerate(self.document.sections):
+                    if section._sectPr is element._sectPr:
+                        return i
                 return 0
         return 0
 

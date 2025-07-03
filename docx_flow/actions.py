@@ -430,7 +430,7 @@ class AddPageNumberAction(Action):
         # 获取页脚
         footer = element.footer
         
-        # 如果页脚链接到前一个节，断开链接
+        # 如果footer链接到前一个section，需要断开链接
         if footer.is_linked_to_previous:
             footer.is_linked_to_previous = False
         
@@ -444,13 +444,13 @@ class AddPageNumberAction(Action):
         else:
             paragraph = footer.paragraphs[0]
         
-        # 设置段落对齐方式
+        # 设置段落居中对齐
         paragraph.alignment = self.alignment
         
         # 创建run并添加页码字段
-        run = paragraph.runs[0] if paragraph.runs else paragraph.add_run()
+        run = paragraph.add_run()
         
-        # 设置字体格式
+        # 设置字体格式：微软雅黑，9号，黑色，无加粗无斜体
         run.font.name = self.font_name
         run.font.size = Pt(self.font_size)
         run.font.bold = False
@@ -469,7 +469,8 @@ class AddPageNumberAction(Action):
             element._sectPr.append(pg_num_type)
     
     def _create_page_number_field(self):
-        """创建页码字段的XML元素。"""
+        """创建页码字段的XML元素"""
+        # 创建页码字段的XML结构
         fldChar_begin = OxmlElement('w:fldChar')
         fldChar_begin.set(qn('w:fldCharType'), 'begin')
         
@@ -481,12 +482,12 @@ class AddPageNumberAction(Action):
         
         return fldChar_begin, instrText, fldChar_end
     
-    def _create_page_number_type(self, start_num: int):
-        """创建页码类型元素，用于设置页码起始值。"""
+    def _create_page_number_type(self, start_num=1):
+        """创建页码类型元素，用于设置页码起始值"""
         num_type = OxmlElement('w:pgNumType')
         num_type.set(qn('w:start'), str(start_num))
         return num_type
-
+    
 
 class ClearPageNumberAction(Action):
     """清除节页脚页码的操作。"""
@@ -496,7 +497,7 @@ class ClearPageNumberAction(Action):
         
         footer = element.footer
         
-        # 如果页脚链接到前一个节，断开链接
+        # 如果footer链接到前一个section，需要断开链接
         if footer.is_linked_to_previous:
             footer.is_linked_to_previous = False
         
