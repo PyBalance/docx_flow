@@ -282,6 +282,42 @@ action = SetSectionOrientationAction('portrait')
 editor.select_sections().apply(action)
 ```
 
+### AddPageNumberAction(start_number, restart_numbering, font_name, font_size, alignment)
+为节添加页码。
+
+```python
+from docx_flow.actions import AddPageNumberAction
+
+# 添加默认页码（从1开始，微软雅黑9号，居中）
+action = AddPageNumberAction()
+editor.select_sections().apply(action)
+
+# 自定义页码格式
+action = AddPageNumberAction(
+    start_number=1,           # 起始页码
+    restart_numbering=True,   # 重新开始编号
+    font_name='微软雅黑',      # 字体名称
+    font_size=9,             # 字体大小
+    alignment='center'        # 对齐方式: 'left', 'center', 'right'
+)
+editor.select_sections().apply(action)
+
+# 从第5页开始编号
+action = AddPageNumberAction(start_number=5)
+editor.select_sections().get_by_index(0).apply(action)
+```
+
+### ClearPageNumberAction()
+清除节的页码。
+
+```python
+from docx_flow.actions import ClearPageNumberAction
+
+# 清除页码
+action = ClearPageNumberAction()
+editor.select_sections().apply(action)
+```
+
 ## 链式调用示例
 
 ### 基本文本处理
@@ -354,7 +390,9 @@ from docx_flow.actions import (
     SetTabStopAction,
     ClearAndSetTabStopAction,
     SetSectionOrientationAction,
-    SetTableColumnWidthAction
+    SetTableColumnWidthAction,
+    AddPageNumberAction,
+    ClearPageNumberAction
 )
 from docx.shared import Cm, Inches
 from docx.text.paragraph import Paragraph
@@ -448,6 +486,23 @@ def main():
         .where(RegexCondition(r"【目标:自定义函数】"))\
         .apply(ReplaceTextAction("【目标:自定义函数】", "【效果】"))
     
+    # 4. 页码操作
+    # 4.1 清除所有页码
+    editor.select_sections().apply(ClearPageNumberAction())
+    
+    # 4.2 从第二节开始添加连续页码
+    editor.select_sections().from_section(1)\
+        .apply(AddPageNumberAction(start_number=1, restart_numbering=True))
+    
+    # 4.3 为特定节添加自定义格式页码
+    editor.select_sections().get_by_index(0)\
+        .apply(AddPageNumberAction(
+            start_number=1,
+            font_name='Arial', 
+            font_size=10,
+            alignment='right'
+        ))
+    
     # 保存文档
     editor.save("demo_ultimate_output.docx")
 
@@ -485,6 +540,24 @@ editor.select_tables()\
 # 将特定节设置为横向
 editor.select_sections().get_by_index(1)\
     .apply(SetSectionOrientationAction('landscape'))
+```
+
+### 页码管理
+```python
+# 清除所有页码
+editor.select_sections().apply(ClearPageNumberAction())
+
+# 从第二节开始连续编页码
+editor.select_sections().from_section(1)\
+    .apply(AddPageNumberAction(start_number=1))
+
+# 分组编页码：第1-2节为一组，第3节之后为另一组
+editor.select_sections().get_by_index(0)\
+    .apply(AddPageNumberAction(start_number=1))
+editor.select_sections().get_by_index(1)\
+    .apply(AddPageNumberAction(restart_numbering=False))
+editor.select_sections().from_section(2)\
+    .apply(AddPageNumberAction(start_number=1, restart_numbering=True))
 ```
 
 ## 工具函数属性

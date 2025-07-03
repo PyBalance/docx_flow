@@ -51,7 +51,9 @@ from .actions import (
     ClearAndSetTabStopAction,
     ReplaceTextAction,
     SetFontSizeAction,
-    SetSectionOrientationAction
+    SetSectionOrientationAction,
+    AddPageNumberAction,
+    ClearPageNumberAction
 )
 
 __all__ = [
@@ -72,6 +74,8 @@ __all__ = [
     "ClearAndSetTabStopAction",
     "AutoFitTableAction",
     "TableTextCondition",
-    "SetFontSizeAction"
+    "SetFontSizeAction",
+    "AddPageNumberAction",
+    "ClearPageNumberAction"
 ]
 

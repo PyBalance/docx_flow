@@ -395,3 +395,117 @@ class SetSectionOrientationAction(Action):
         # 交换宽高，确保宽度大于高度（横向特征）
         element.page_width = max(original_width, original_height)
         element.page_height = min(original_width, original_height)
+
+
+class AddPageNumberAction(Action):
+    """为节添加页码的操作。"""
+    def __init__(self, start_number: int = 1, restart_numbering: bool = True, 
+                 font_name: str = '微软雅黑', font_size: int = 9, 
+                 alignment: str = 'center'):
+        """
+        初始化页码添加操作。
+        
+        :param start_number: 起始页码数字，默认为1
+        :param restart_numbering: 是否重新开始编号，默认为True
+        :param font_name: 字体名称，默认为'微软雅黑'
+        :param font_size: 字体大小，默认为9号
+        :param alignment: 对齐方式，默认为'center'（居中）
+        """
+        self.start_number = start_number
+        self.restart_numbering = restart_numbering
+        self.font_name = font_name
+        self.font_size = font_size
+        
+        alignment_map = {
+            'left': WD_ALIGN_PARAGRAPH.LEFT,
+            'center': WD_ALIGN_PARAGRAPH.CENTER,
+            'right': WD_ALIGN_PARAGRAPH.RIGHT,
+        }
+        self.alignment = alignment_map.get(alignment.lower(), WD_ALIGN_PARAGRAPH.CENTER)
+    
+    def execute(self, element: Any) -> None:
+        if not isinstance(element, Section):
+            return
+        
+        # 获取页脚
+        footer = element.footer
+        
+        # 如果页脚链接到前一个节，断开链接
+        if footer.is_linked_to_previous:
+            footer.is_linked_to_previous = False
+        
+        # 清空现有段落内容
+        for paragraph in footer.paragraphs:
+            paragraph.clear()
+        
+        # 如果没有段落，添加一个新段落
+        if not footer.paragraphs:
+            paragraph = footer.add_paragraph()
+        else:
+            paragraph = footer.paragraphs[0]
+        
+        # 设置段落对齐方式
+        paragraph.alignment = self.alignment
+        
+        # 创建run并添加页码字段
+        run = paragraph.runs[0] if paragraph.runs else paragraph.add_run()
+        
+        # 设置字体格式
+        run.font.name = self.font_name
+        run.font.size = Pt(self.font_size)
+        run.font.bold = False
+        run.font.italic = False
+        run.font.color.rgb = None  # 默认黑色
+        
+        # 添加页码字段的XML元素
+        fldChar_begin, instrText, fldChar_end = self._create_page_number_field()
+        run._element.append(fldChar_begin)
+        run._element.append(instrText)
+        run._element.append(fldChar_end)
+        
+        # 如果需要重新开始编号，设置页码起始值
+        if self.restart_numbering:
+            pg_num_type = self._create_page_number_type(self.start_number)
+            element._sectPr.append(pg_num_type)
+    
+    def _create_page_number_field(self):
+        """创建页码字段的XML元素。"""
+        fldChar_begin = OxmlElement('w:fldChar')
+        fldChar_begin.set(qn('w:fldCharType'), 'begin')
+        
+        instrText = OxmlElement('w:instrText')
+        instrText.text = 'PAGE'
+        
+        fldChar_end = OxmlElement('w:fldChar')
+        fldChar_end.set(qn('w:fldCharType'), 'end')
+        
+        return fldChar_begin, instrText, fldChar_end
+    
+    def _create_page_number_type(self, start_num: int):
+        """创建页码类型元素，用于设置页码起始值。"""
+        num_type = OxmlElement('w:pgNumType')
+        num_type.set(qn('w:start'), str(start_num))
+        return num_type
+
+
+class ClearPageNumberAction(Action):
+    """清除节页脚页码的操作。"""
+    def execute(self, element: Any) -> None:
+        if not isinstance(element, Section):
+            return
+        
+        footer = element.footer
+        
+        # 如果页脚链接到前一个节，断开链接
+        if footer.is_linked_to_previous:
+            footer.is_linked_to_previous = False
+        
+        # 清空现有段落内容
+        for paragraph in footer.paragraphs:
+            paragraph.clear()
+        
+        # 移除节属性中的页码设置
+        sectPr = element._sectPr
+        pg_num_type = sectPr.find(qn('w:pgNumType'))
+        if pg_num_type is not None:
+            sectPr.remove(pg_num_type)
